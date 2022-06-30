@@ -1,0 +1,32 @@
+{
+  "name": "botdiscord",
+  "version": "0.0.1",
+  "description": "Bot de discord 2022 version inicial",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx ts-node index.ts"
+  },
+  "keywords": [
+    "bot",
+    "discord",
+    "discordjs",
+    "discord.js"
+  ],
+  "author": "Diego Layme",
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/opus": "^0.5.3",
+    "@discordjs/voice": "^0.10.0",
+    "discord-api-types": "^0.34.0",
+    "discord.js": "^13.8.0",
+    "libsodium-wrappers": "^0.7.10",
+    "yt-search": "^2.10.3",
+    "ytdl-core": "^4.11.0"
+  },
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.20",
+    "@types/node": "^18.0.0",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
+  }
+}
