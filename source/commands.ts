@@ -16,11 +16,19 @@ const commands : ApplicationCommandDataResolvable [] = [
 	},
 	{
 		name : 'showlist',
-		description : 'Play list',
+		description : 'Muestra la cola de reproducción.',
 	},
 	{
 		name : 'skip',
-		description : 'Pasa a la siguiente canción.',
+		description : 'Saltar la reproducción actual.',
+	},
+	{
+		name : 'pause',
+		description : 'Pausar la reproducción.',
+	},
+	{
+		name : 'resume',
+		description : 'Reanudar la reproducción.',
 	}
 ]; 
 
