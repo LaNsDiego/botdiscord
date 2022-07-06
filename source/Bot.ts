@@ -1,10 +1,12 @@
 import { AudioPlayer, joinVoiceChannel, VoiceConnection } from "@discordjs/voice";
-import { CommandInteraction, Guild, GuildMember, MessageEmbed, TextChannel } from "discord.js";
+import { CommandInteraction, Guild, GuildBasedChannel, GuildChannelManager, GuildMember, MessageEmbed, TextChannel } from "discord.js";
+import { ChannelTypes } from "discord.js/typings/enums";
 import Logger from "../logger";
 import BotOptions from "../types/interface.bot";
 import { createDiscordJSAdapter } from "./Adapter";
 import Player from "./Player";
 import Queue from "./Queue";
+import Song from "./Song";
 
 export default class Bot{
 
@@ -14,6 +16,7 @@ export default class Bot{
     public interactorMember : GuildMember
     public interaction : CommandInteraction
     public player : Player = null
+    public votes : string[] = []
     constructor(options : BotOptions){
         this.guild = options.guild
     }
@@ -40,14 +43,19 @@ export default class Bot{
             adapterCreator:  createDiscordJSAdapter(this.interactorMember.voice.channel)
         })
         if(!this.voiceConnection) return this.interaction.reply({ content : `Debes unirte a un canal de voz por favor.`})
-        this.player = this.player ||new Player(this.voiceConnection)
+        this.player = this.player ||new Player(this.voiceConnection , this)
         const song = await Queue.findSong(query)
         this.interaction.reply(`Buscando ${query}`)
         if(song){
             this.player.trackList = [song , ...this.player.trackList]
-            const resource = await song.makeResource()!
-            this.player.play(resource);
+            if(this.player.isPlaying){
+                return this.textChannel.send(`Se agrego a la cola de reproducción : ${song.title}`)
+            }
+            await this.player.next()
+            return this.textChannel.send(`Se agrego a la cola de reproducción : ${song.title}`)
         }
+        Logger.info(`Intentando #play con ${query}`)
+        this.play(query)
         return
     }
     
@@ -61,8 +69,20 @@ export default class Bot{
         return interaction.reply({embeds : [messageEmbeded]})
     }
 
-    public skip(interaction : CommandInteraction){
-        return interaction.reply(`Skip 1/2`)
+    public async skip(interaction : CommandInteraction){
+        if(!this.voiceConnection) return this.interaction.reply({ content : `Debes unirte a un canal de voz por favor.`})
+        if(this.votes.find(idMember => idMember === this.interactorMember.id)){
+            return interaction.reply(`${this.interactorMember.nickname} ejecutó el comando SKIP`)
+        }
+        const quantityMembers = this.interactorMember.voice.channel.members.size;
+        const fiftyPercent = Math.ceil(quantityMembers / 2)
+        this.votes.push(this.interactorMember.id)
+        interaction.reply(`${this.interactorMember.nickname} a votado ${this.votes.length}/${quantityMembers}`)
+        if(quantityMembers >= fiftyPercent){
+            this.player.next()
+            return this.textChannel.send(`Aplicando SKIP a la reproducción`)
+        }
+        return 
     }
 
     public pause(){
@@ -77,5 +97,9 @@ export default class Bot{
             return this.interaction.reply(`Reproducción pausada.`)
         }
         return this.interaction.reply(`No se pudo reanudar la reproducción.`)
+    }
+
+    public onNext(song : Song){
+        this.textChannel.send(`Reproduciendo : ${song.title}`)
     }
 }
