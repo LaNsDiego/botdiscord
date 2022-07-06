@@ -100,6 +100,13 @@ export default class Bot{
     }
 
     public onNext(song : Song){
-        this.textChannel.send(`Reproduciendo : ${song.title}`)
+        const messageEmbeded  = new MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle('Reproduciendo...')
+        .setDescription(`Song : ${song.title}`)
+        .setTimestamp()
+        .setFooter({ text: 'Cachame papi :3 !!!' });
+        
+        this.textChannel.send({embeds : [messageEmbeded]})
     }
 }
